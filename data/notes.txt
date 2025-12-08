@@ -1,0 +1,10 @@
+Meeting notes – Internal Review
+
+We need to verify whether the following reference IDs still match existing entries 
+in our internal system: 101, 202 and 404.
+
+ID 404 is likely outdated but should still be checked.
+
+Action items:
+- Cross-check all references with database records.
+- Prepare a summary for management.

@@ -1,0 +1,6 @@
+Contract – Supplier Agreement
+
+This document contains references to internal parties with ID 101 and ID 303.
+Ensure these parties are validated in the corporate records database.
+
+The supplier confirms compliance with basic service-level expectations.
