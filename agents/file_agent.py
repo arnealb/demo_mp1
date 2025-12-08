@@ -12,7 +12,7 @@ def extract_ids(text: str) -> list[int]:
     return list({int(m) for m in matches})  # unieke ints
 
 
-def create_file_agent(mcp_clients: dict) -> ChatAgent:
+def create_file_agent() -> ChatAgent:
     """
     Create a FileAgent that uses the filesystem MCP tools.
     """
@@ -23,6 +23,5 @@ def create_file_agent(mcp_clients: dict) -> ChatAgent:
             "Return the full content of every document you read. "
             "Do not summarize. Do not analyze. Just return the raw text."
         ),
-        chat_client=OpenAIChatClient(model_id="gpt-4o-mini"),
-        mcp_clients=mcp_clients,
+        chat_client=OpenAIChatClient(model_id="gpt-4o-mini")
     )

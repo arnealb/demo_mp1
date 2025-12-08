@@ -14,14 +14,17 @@ def resolve_path(path: str) -> str:
         raise ValueError("Access outside root is not allowed")
     return full
 
-@mcp.tool
-def list_files(subdir: str = "") -> list(str):
-    base = resolve_path(subdir)
-    if not os.path.isdir(base):
-        raise ValueError("Not a directory")
-    return os.listdir(base)
+@mcp.tool()
+def list_all_files() -> list[str]:
+    paths = []
+    for root, dirs, files in os.walk(ROOT):
+        for f in files:
+            rel = os.path.relpath(os.path.join(root, f), ROOT)
+            paths.append(rel)
+    return paths
 
-@mcp.tool
+
+@mcp.tool()
 def read_files(path: str) -> str:
     full = resolve_path(path)
     if not os.path.isfile(full):

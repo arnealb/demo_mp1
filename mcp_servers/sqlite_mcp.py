@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logging.info("Starting sqlite MCP Server...")
 
 
-mcp = FastMCP("sqlite-crud")
+mcp = FastMCP("sqlite_mcp")
 DB_FILE = "db/example.db"
 
 @mcp.tool()
