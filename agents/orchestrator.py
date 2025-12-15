@@ -3,54 +3,103 @@ from agents.database_agent import create_database_agent
 from agents.summarizer_agent import create_summarizer_agent
 from agents.file_agent import extract_ids
 
-from agent_framework import ChatAgent, MCPStdioTool
+from agent_framework import ChatAgent, MCPStdioTool, MagenticBuilder, StandardMagenticManager
+from agent_framework.openai import OpenAIChatClient
 
-
-async def run_orchestration(filesystem_mcp: MCPStdioTool, sqlite_mcp: MCPStdioTool) -> str:
-    """
-    Full pipeline:
-    1. FileAgent → read files (via filesystem MCP)
-    2. Extract IDs (Python)
-    3. DatabaseAgent → fetch records (via SQLite MCP)
-    4. SummarizerAgent → summarize the matched records
-    """
-
-    # 1) Make agents
-    file_agent = create_file_agent()
-    db_agent = create_database_agent()
+async def setup(filesystem_mcp: MCPStdioTool, sqlite_mcp: MCPStdioTool) -> MagenticBuilder: 
+    file_agent = create_file_agent(filesystem_mcp)
+    db_agent = create_database_agent(sqlite_mcp)
     summarizer_agent = create_summarizer_agent()
 
-    # 2) FileAgent → get raw text
-    print("→ FileAgent: reading documents...")
-    response = await file_agent.run(
-        "Read all documents and return their raw text.",
-        tools=filesystem_mcp,
-        return_intermediate_steps=True
+    manager_agent = create_orchestrator_agent()
+
+    workflow = (
+        MagenticBuilder()
+        .participants(
+            file=file_agent,
+            database=db_agent,
+            summarizer=summarizer_agent,
+        )
+        .with_standard_manager(
+            manager_agent,
+            max_round_count=4,
+            max_stall_count=1,
+        )
+
+        .build()
     )
-    raw_text = response.text
-    # print("raw_text:", raw_text)
+    return workflow
 
-    # 3) Extract IDs in Python
-    print("→ Extracting IDs...")
-    ids = extract_ids(raw_text)
 
-    if not ids:
-        return "No IDs found in the documents."
 
-    print(f"→ Found IDs: {ids}")
+def create_orchestrator_agent() -> ChatAgent:
+    return StandardMagenticManager(
+        instructions="""
+            Goal:
+            Produce a single final answer.
 
-    # 4) DatabaseAgent → retrieve DB records
-    print("→ Fetching DB records...")
-    db_response = await db_agent.run(
-        f"Fetch all records for the following IDs: {ids}",
-        tools=sqlite_mcp
+            Process:
+            1. Use FileAgent to read documents and extract identifiers.
+            2. Use DatabaseAgent to fetch records for those identifiers.
+            3. Use SummarizerAgent exactly once to produce the final answer.
+
+            Rules:
+            - Do not repeat completed steps.
+            - After SummarizerAgent responds, STOP immediately.
+            """,
+        chat_client=OpenAIChatClient(model_id="gpt-4o-mini"),
     )
 
-    # 5) Summarize
-    print("→ Summarizing...")
-    summary = await summarizer_agent.run(
-        f"Summarize the following database matches:\n{db_response}"
-    )
 
-    # 6) Result
-    return summary
+
+
+
+
+# async def run_orchestration(filesystem_mcp: MCPStdioTool, sqlite_mcp: MCPStdioTool) -> str:
+#     """
+#     Full pipeline:
+#     1. FileAgent → read files (via filesystem MCP)
+#     2. Extract IDs (Python)
+#     3. DatabaseAgent → fetch records (via SQLite MCP)
+#     4. SummarizerAgent → summarize the matched records
+#     """
+
+#     # 1) Make agents
+#     file_agent = create_file_agent()
+#     db_agent = create_database_agent()
+#     summarizer_agent = create_summarizer_agent()
+
+#     # 2) FileAgent → get raw text
+#     print("→ FileAgent: reading documents...")
+#     response = await file_agent.run(
+#         "Read all documents and return their raw text.",
+#         tools=filesystem_mcp,
+#         return_intermediate_steps=True
+#     )
+#     raw_text = response.text
+#     # print("raw_text:", raw_text)
+
+#     # 3) Extract IDs in Python
+#     print("→ Extracting IDs...")
+#     ids = extract_ids(raw_text)
+
+#     if not ids:
+#         return "No IDs found in the documents."
+
+#     print(f"→ Found IDs: {ids}")
+
+#     # 4) DatabaseAgent → retrieve DB records
+#     print("→ Fetching DB records...")
+#     db_response = await db_agent.run(
+#         f"Fetch all records for the following IDs: {ids}",
+#         tools=sqlite_mcp
+#     )
+
+#     # 5) Summarize
+#     print("→ Summarizing...")
+#     summary = await summarizer_agent.run(
+#         f"Summarize the following database matches:\n{db_response}"
+#     )
+
+#     # 6) Result
+#     return summary

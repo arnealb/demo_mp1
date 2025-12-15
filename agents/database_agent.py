@@ -1,20 +1,20 @@
-from agent_framework import ChatAgent
+from agent_framework import ChatAgent, MCPStdioTool
 from agent_framework.openai import OpenAIChatClient
 
 
-def create_database_agent() -> ChatAgent:
-    """
-    DatabaseAgent that accesses the SQLite MCP server.
-    It only retrieves raw records using MCP tools.
-    """
+def create_database_agent(sqlite_mcp):
     return ChatAgent(
         name="DatabaseAgent",
-        instructions=(
-            "You use SQLite MCP tools such as list_all_entries and "
-            "list_all_entries_with_id to fetch database records. "
-            "When given a list of IDs, fetch the corresponding records. "
-            "Return only the raw records as provided by the tools. "
-            "Do not summarize or interpret."
-        ),
-        chat_client=OpenAIChatClient(model_id="gpt-4o-mini")
+        description="Fetches records for identifiers",
+        instructions="""
+            Fetch database records for the given identifiers.
+
+            Rules:
+            - Query the database only once per request.
+            - If records are already fetched, respond with: DATABASE_COMPLETE.
+            - Do not repeat queries unless new identifiers are provided.
+            """,
+        tools=sqlite_mcp,
+        chat_client=OpenAIChatClient(model_id="gpt-4o-mini"),
     )
+
