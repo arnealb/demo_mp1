@@ -1,8 +1,8 @@
+import asyncio
 from agent_framework import MCPStdioTool
-from agent_framework.devui import serve
 from entities.orchestrator import setup
 
-def main():
+def _build_workflow():
     filesystem_mcp = MCPStdioTool(
         name="fs",
         command="python3",
@@ -15,8 +15,6 @@ def main():
         args=["mcp_servers/sqlite_mcp.py"]
     )
 
-    workflow = setup(filesystem_mcp, sqlite_mcp)  # sync
-    serve(entities=[workflow], port=8080, auto_open=True)
+    return asyncio.run(setup(filesystem_mcp, sqlite_mcp))
 
-if __name__ == "__main__":
-    main()
+workflow = _build_workflow()
