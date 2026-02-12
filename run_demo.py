@@ -2,7 +2,7 @@ import sys
 import asyncio
 import logging
 from agent_framework import MCPStdioTool
-from agents.orchestrator import setup
+from entities.orchestrator import setup
 from agent_framework.devui import serve
 
 
