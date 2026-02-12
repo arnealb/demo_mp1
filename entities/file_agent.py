@@ -1,5 +1,5 @@
 import re
-from agent_framework import ChatAgent
+from agent_framework import Agent
 from agent_framework.openai import OpenAIChatClient
 from agent_framework import MCPStdioTool
 
@@ -14,7 +14,8 @@ def extract_ids(text: str) -> list[int]:
 
 
 def create_file_agent(filesystem_mcp):
-    return ChatAgent(
+    return Agent(
+        client=OpenAIChatClient(model_id="gpt-4o-mini"),
         name="FileAgent",
         description="Reads documents from the filesystem",
         instructions="""
@@ -26,6 +27,5 @@ def create_file_agent(filesystem_mcp):
         - If called again, respond with: FILE_COMPLETE.
         """,
         tools=filesystem_mcp,
-        chat_client=OpenAIChatClient(model_id="gpt-4o-mini"),
     )
 

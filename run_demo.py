@@ -9,13 +9,13 @@ logging.getLogger("asyncio").setLevel(logging.CRITICAL)
 def main():
     filesystem_mcp = MCPStdioTool(
         name="fs",
-        command=sys.executable,
+        command="python3",
         args=["mcp_servers/filesystem_mcp.py"]
     )
 
     sqlite_mcp = MCPStdioTool(
         name="db",
-        command=sys.executable,
+        command="python3",
         args=["mcp_servers/sqlite_mcp.py"]
     )
 
