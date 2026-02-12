@@ -16,9 +16,10 @@ def setup(filesystem_mcp: MCPStdioTool, sqlite_mcp: MCPStdioTool) -> WorkflowAge
         .build()
     )
 
-    return WorkflowAgent(
+    orchestrator = WorkflowAgent(
         workflow=workflow,
         name="Orchestrator",
         description="Reads documents, fetches database records, and produces a summary.",
     )
+    return orchestrator, file_agent, db_agent, summarizer_agent
 

@@ -27,8 +27,8 @@ def main():
         args=["mcp_servers/sqlite_mcp.py"]
     )
 
-    workflow = setup(filesystem_mcp, sqlite_mcp)
-    serve(entities=[workflow], port=8080, auto_open=True)
+    orchestrator, file_agent, db_agent, summarizer_agent = setup(filesystem_mcp, sqlite_mcp)
+    serve(entities=[orchestrator, file_agent, db_agent, summarizer_agent], port=8080, auto_open=True)
 
 if __name__ == "__main__":
     main()
