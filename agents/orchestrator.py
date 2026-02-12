@@ -1,53 +1,25 @@
 from agents.file_agent import create_file_agent
 from agents.database_agent import create_database_agent
 from agents.summarizer_agent import create_summarizer_agent
-from agents.file_agent import extract_ids
 
-from agent_framework import ChatAgent, MCPStdioTool, MagenticBuilder, StandardMagenticManager
-from agent_framework.openai import OpenAIChatClient
+from agent_framework import MCPStdioTool, WorkflowBuilder, WorkflowAgent
 
-async def setup(filesystem_mcp: MCPStdioTool, sqlite_mcp: MCPStdioTool) -> MagenticBuilder: 
+
+def setup(filesystem_mcp: MCPStdioTool, sqlite_mcp: MCPStdioTool) -> WorkflowAgent:
     file_agent = create_file_agent(filesystem_mcp)
     db_agent = create_database_agent(sqlite_mcp)
     summarizer_agent = create_summarizer_agent()
 
-    manager_agent = create_orchestrator_agent()
-
     workflow = (
-        MagenticBuilder()
-        .participants(
-            file=file_agent,
-            database=db_agent,
-            summarizer=summarizer_agent,
-        )
-        .with_standard_manager(
-            manager_agent,
-            max_round_count=4,
-            max_stall_count=1,
-        )
-
+        WorkflowBuilder(start_executor=file_agent)
+        .add_chain([file_agent, db_agent, summarizer_agent])
         .build()
     )
-    return workflow
 
-
-
-def create_orchestrator_agent() -> ChatAgent:
-    return StandardMagenticManager(
-        instructions="""
-            Goal:
-            Produce a single final answer.
-
-            Process:
-            1. Use FileAgent to read documents and extract identifiers.
-            2. Use DatabaseAgent to fetch records for those identifiers.
-            3. Use SummarizerAgent exactly once to produce the final answer.
-
-            Rules:
-            - Do not repeat completed steps.
-            - After SummarizerAgent responds, STOP immediately.
-            """,
-        chat_client=OpenAIChatClient(model_id="gpt-4o-mini"),
+    return WorkflowAgent(
+        workflow=workflow,
+        name="Orchestrator",
+        description="Reads documents, fetches database records, and produces a summary.",
     )
 
 

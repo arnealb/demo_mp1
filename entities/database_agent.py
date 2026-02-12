@@ -17,3 +17,4 @@ def create_database_agent(sqlite_mcp):
             """,
         tools=sqlite_mcp,
     )
+
