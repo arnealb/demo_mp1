@@ -1,3 +1,6 @@
+  pip install agent-framework agent-framework-core agent-framework-devui agent-framework-a2a agent-framework-azure-ai agent-framework-copilotstudio agent-framework-mem0
+  agent-framework-redis aiosqlite mcp
+
 # demo_mp1
 
 A multi-agent prototype that reads documents, extracts reference IDs, looks them up in a database, and produces a summary — all orchestrated through Microsoft's Agent Framework with a web-based DevUI.
